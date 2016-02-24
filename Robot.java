@@ -32,7 +32,7 @@ public class Robot extends IterativeRobot {
 	int echoSensorPin=3;
 	int pingSensorPin=4;
 	int upperLimitPin=1;
-	int lowerLimitPin=2;
+	int lowerLimitPin=5;
 	
 	// Driver Station / controller mapping
 	int joyPort1=0; //driver xbox controller
@@ -69,6 +69,8 @@ public class Robot extends IterativeRobot {
 	boolean upperFlag = false;
 	boolean lowerFlag = false;
 	int autoStage = 0;
+	
+	boolean autoLimitStage = false;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -99,6 +101,7 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousInit() {
     	moveCounter = 0;
+    	lowerFlag = false;
     }
 
     //you're the {CSS} to my <HTML> <3
@@ -109,11 +112,21 @@ public class Robot extends IterativeRobot {
      */
     
 	
-    public void autonomousPeriodic() {
-    	if (lowerFlag == false){
-    		moveLift(0.25);
+    public void autonomousPeriodic(){
+    	if (!autoLimitStage){
+    		if (lowerLimit.get()){
+    			System.out.println("step 2");
+    			liftMotor.set(0.25);
+    			System.out.println("step 3");
+    		}
     	} else {
 
+    		autoLimitStage = true;
+    	}
+
+
+    	if (autoLimitStage) {
+    		System.out.println("step 4");
     		System.out.println(moveCounter);
     		if (moveCounter < 70)
     		{
@@ -123,8 +136,9 @@ public class Robot extends IterativeRobot {
     		else {
     			myRobot.drive(0.0, 0.0); 	// stop robot
     		}
-    	}
+    	} 
     }
+
 
 	 
     //Hi hi hi hi
@@ -224,17 +238,21 @@ public class Robot extends IterativeRobot {
      	 upperBtnState = upperLimit.get();
      	 lowerBtnState = lowerLimit.get();
      	 
+     	 if (!upperBtnState) System.out.println("Upper Limit Hit!");
+     	 if (!lowerBtnState) System.out.println("Lower Limit Hit!");
+     	 
+     	 System.out.println("LIFT AXIS: " + liftAxis);
      	 if(liftAxis < 0 && upperBtnState == false)
      	 {
      		 liftMotor.set(stopMotor);
      		 lowerFlag = true;
-     		 System.out.println("Hit lower limit");
+     		 //System.out.println("Hit lower limit");
      	 }
      	 else if(liftAxis > 0 && lowerBtnState == false)
      	 {
      		 liftMotor.set(stopMotor);
      		 upperFlag = true;
-     		 System.out.println("Hit upper limit");
+     		 //System.out.println("Hit upper limit");
      	 }
      	 else if (lowerBtnState == false && upperBtnState == false)
      	 {
